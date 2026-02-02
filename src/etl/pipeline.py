@@ -1,8 +1,9 @@
 import logging
 import os
 from pathlib import Path
+from venv import logger
 from dotenv import load_dotenv
-
+from .duckdb_serving import build_serving_layer
 from .spark import make_spark
 from .extract import extract_openmeteo
 from .transform_spark import transform_openmeteo_spark
@@ -13,8 +14,6 @@ def run() -> int:
 
     project = os.getenv("PROJECT_NAME", "pyspark-etl-datalake")
     log_level = os.getenv("LOG_LEVEL", "INFO")
-
-
 
 
     data_dir = Path(os.getenv("DATA_DIR", "./data"))
@@ -50,8 +49,12 @@ def run() -> int:
         logger.info("schema=%s", df.schema.simpleString())
 
         write_parquet_partitioned_dynamic(df, processed_dir, spark)
-
         logger.info("parquet_written path=%s", str(processed_dir))
+
+        duckdb_path = Path(os.getenv("DUCKDB_PATH", str(data_dir / "warehouse.duckdb")))
+        build_serving_layer(duckdb_path, processed_dir)
+        logger.info("duckdb_serving ok path=%s", str(duckdb_path))
+
         return 0
 
     except Exception:
