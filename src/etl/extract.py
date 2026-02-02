@@ -1,17 +1,13 @@
-from datetime import datetime, timedelta, timezone
 import requests
 
-def extract_openmeteo(lat: float, lon: float, days_back: int) -> dict:
-    end = datetime.now(timezone.utc)
-    start = end - timedelta(days=days_back)
-
+def extract_openmeteo(lat: float, lon: float, start_date: str, end_date: str) -> dict:
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
         "longitude": lon,
         "hourly": "temperature_2m,relative_humidity_2m,precipitation",
-        "start_date": start.date().isoformat(),
-        "end_date": end.date().isoformat(),
+        "start_date": start_date,
+        "end_date": end_date,
         "timezone": "UTC",
     }
 
