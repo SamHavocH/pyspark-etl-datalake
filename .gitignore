@@ -18,13 +18,21 @@ logs/
 *.log
 
 # Data
-data/
+data/*
 !data/.gitkeep
+!data/**/
+!data/**/.gitkeep
+data/**/*
+!data/**/
+!data/**/.gitkeep
 
 # Spark
 spark-warehouse/
 metastore_db/
 *.crc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 # DuckDB
 *.duckdb

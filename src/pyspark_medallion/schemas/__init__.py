@@ -1,0 +1,17 @@
+from pyspark_medallion.schemas.ecommerce import (
+    BRONZE_RAW_SCHEMA,
+    CUSTOMERS_SCHEMA,
+    EVENTS_SCHEMA,
+    ORDERS_SCHEMA,
+    PRODUCTS_SCHEMA,
+    TRANSACTIONS_SCHEMA,
+)
+
+__all__ = [
+    "BRONZE_RAW_SCHEMA",
+    "CUSTOMERS_SCHEMA",
+    "EVENTS_SCHEMA",
+    "ORDERS_SCHEMA",
+    "PRODUCTS_SCHEMA",
+    "TRANSACTIONS_SCHEMA",
+]

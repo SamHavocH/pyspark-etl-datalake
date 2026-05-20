@@ -20,4 +20,4 @@ if [[ -n "${JAVA_HOME:-}" ]]; then
   export PATH="$JAVA_HOME/bin:$PATH"
 fi
 
-python -m src.cli
+uv run medallion pipeline
