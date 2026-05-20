@@ -7,6 +7,8 @@ __pycache__/
 .eggs/
 .venv/
 venv/
+.pytest_cache/
+.ruff_cache/
 
 # Env
 .env
@@ -18,13 +20,23 @@ logs/
 *.log
 
 # Data
-data/
-!data/.gitkeep
+data/raw/*
+data/bronze/*
+data/silver/*
+data/gold/*
+data/failed/
+data/metrics/
+data/state/
+!data/raw/.gitkeep
+!data/bronze/.gitkeep
+!data/silver/.gitkeep
+!data/gold/.gitkeep
 
 # Spark
 spark-warehouse/
 metastore_db/
 *.crc
+derby.log
 
 # DuckDB
 *.duckdb

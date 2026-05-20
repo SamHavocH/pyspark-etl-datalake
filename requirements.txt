@@ -1,7 +1,1 @@
-requests
-python-dotenv
-duckdb
-pyspark
-pandas
-matplotlib
-dotenv
+-e .

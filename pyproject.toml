@@ -1,0 +1,53 @@
+[project]
+name = "pyspark-etl-datalake"
+version = "0.1.0"
+description = "Production-style PySpark medallion data lake using Open-Meteo weather data."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.1.3",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "pyspark>=4.0.0",
+    "requests>=2.32.3",
+    "tenacity>=9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+]
+notebooks = [
+    "ipykernel>=6.29.5",
+    "matplotlib>=3.9.2",
+    "pandas>=2.2.3",
+]
+
+[project.scripts]
+datalake = "datalake.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/datalake"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.coverage.run]
+source = ["datalake"]

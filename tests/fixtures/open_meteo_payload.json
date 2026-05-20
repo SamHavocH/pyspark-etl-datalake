@@ -1,0 +1,17 @@
+{
+  "latitude": -23.5,
+  "longitude": -46.625,
+  "timezone": "UTC",
+  "hourly": {
+    "time": [
+      "2026-05-18T00:00",
+      "2026-05-18T01:00",
+      "2026-05-18T01:00",
+      "bad-timestamp"
+    ],
+    "temperature_2m": [18.7, 18.1, 18.1, 999.0],
+    "relative_humidity_2m": [78.0, 80.0, 80.0, 50.0],
+    "precipitation": [0.0, 1.2, 1.2, 0.0],
+    "wind_speed_10m": [7.2, 6.9, 6.9, 2.0]
+  }
+}
