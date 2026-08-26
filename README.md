@@ -1,6 +1,6 @@
 # PySpark Medallion Platform
 
-[![ci](https://github.com/sam/pyspark-medallion-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sam/pyspark-medallion-platform/actions/workflows/ci.yml)
+[![ci](https://github.com/SamHavocH/pyspark-medallion-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/SamHavocH/pyspark-medallion-platform/actions/workflows/ci.yml)
 
 Production-style ecommerce analytics platform built with PySpark, Parquet, Docker Compose, `uv`, pytest, mypy, ruff, pre-commit, and GitHub Actions.
 
@@ -169,6 +169,67 @@ GitHub Actions runs:
 - `ruff check`
 - `mypy`
 - `pytest`
+
+## Design Trade-offs
+
+Every choice below closed off something. This section records what was given up, so the
+next person to touch the project — including future me — can tell a deliberate decision
+from an oversight.
+
+| Decision | Alternative rejected | What it costs |
+| --- | --- | --- |
+| Parquet as the default table format | Delta Lake / Iceberg | No ACID guarantees, no time travel, no `MERGE INTO`. Upserts are full rewrites |
+| Watermarks in a local JSON file | Metastore or state table | Single writer only, no concurrency, no history of past runs |
+| Local Spark in Docker | EMR, Glue, or Databricks | Never exercises shuffle tuning, skew, or executor sizing at real volume |
+| Synthetic data generator | A real public dataset | Loses the messiness that breaks real pipelines |
+| Quarantine bad records and continue | Fail the job on any invalid record | A run can "succeed" while quietly rejecting rows |
+| Business logic in `src/` modules | Notebooks | Slower to iterate interactively; buys testability and review |
+
+### Parquet instead of Delta Lake
+
+Delta is already a declared dependency, and Silver upserts are the exact workload it
+exists for. It is not the default anyway, because the project's primary job is to be
+**cloned and run by someone else in one command**. Parquet needs no runtime that
+understands a transaction log, so `make pipeline` behaves identically on a laptop and in
+CI.
+
+What that costs is real: a Silver merge rewrites the table instead of issuing a
+`MERGE INTO`, which is fine at the volumes here and would not be at production scale.
+The upsert is idempotent by business key, so the semantics match what Delta would give —
+only the mechanics differ, and only the mechanics would have to change.
+
+### Bookmarks in a JSON file
+
+`data/bookmarks.json` is a deliberate stand-in for what Glue Job Bookmarks or a state
+table would do. It works because exactly one process writes it, and it is updated only
+after accepted records land — so a crash mid-run reprocesses rather than skips.
+
+It breaks the moment two jobs run concurrently, and it keeps no history, so there is no
+way to answer "what did the watermark look like last Tuesday". Both are acceptable in a
+local project and neither is acceptable in production. Naming the limit is cheaper than
+discovering it.
+
+### Local Spark instead of a managed runtime
+
+This is the trade-off with the widest gap between what the project demonstrates and what
+production requires. Running on Docker means the code is reviewable and reproducible by
+anyone with Docker installed — no cloud account, no cost, no credentials.
+
+It also means the hard parts of Spark never show up. Partition skew, shuffle spill,
+broadcast thresholds and executor sizing are the problems that actually consume a data
+engineer's time on a real cluster, and none of them appear at this volume. The
+architecture here would carry over; the tuning would all still be ahead.
+
+### Continue on bad records instead of failing
+
+Rejected rows go to `data/rejected_records`, partitioned by date and reason, and every
+run writes a summary to `data/quality_reports`. The pipeline keeps going.
+
+The advantage is that one malformed row out of 200,000 does not take down a nightly load.
+The danger is a job that reports success while rejecting a growing share of its input,
+which is why the run summary carries accepted and rejected counts as first-class metrics
+rather than log noise. In production this pattern needs an alert on the rejection rate,
+not just a report — the report is where the number lives, not where anyone looks.
 
 ## Future Improvements
 
